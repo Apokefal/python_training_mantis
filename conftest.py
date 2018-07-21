@@ -20,17 +20,19 @@ def load_config(file):
 @pytest.fixture
 def app(request):
     global fixture
-    browser = request.config.getoption("--browser")
     web_config = load_config(request.config.getoption("--target"))['web']
+    browser = request.config.getoption("--browser")
+    creds = load_config(request.config.getoption("--target"))["webadmin"]
     if fixture is None or not fixture.is_valid():
-        fixture = Application(browser=browser, base_url=web_config['baseUrl'])
+        fixture = Application(browser=browser, base_url=web_config["baseUrl"])
+    fixture.session.ensure_login(username=creds["username"], password=creds["password"])
     return fixture
 
 
 @pytest.fixture(scope="session", autouse=True)
 def stop(request):
     def fin():
-        fixture.session.ensure_Logout()
+        fixture.session.ensure_logout()
         fixture.destroy()
     request.addfinalizer(fin)
     return fixture

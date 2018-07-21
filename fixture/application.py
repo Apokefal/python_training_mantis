@@ -25,9 +25,10 @@ class Application:
         except:
             return False
 
-    def Open_home_page(self):
+    def open_home_page(self):
         wd = self.wd
-        wd.get(self.base_url)
+        if not (wd.current_url.endswith("/") and len(wd.find_elements_by_name("add")) > 0):
+            wd.get(self.base_url)
 
     def destroy(self):
         self.wd.quit()
