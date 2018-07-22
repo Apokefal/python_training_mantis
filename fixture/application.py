@@ -1,11 +1,12 @@
 from selenium import webdriver
 from fixture.session import SessionHelper
 from fixture.project import ProjectHelper
+from fixture.james import JamesHelper
 
 
 
 class Application:
-    def __init__(self, browser, base_url):
+    def __init__(self, browser, config):
         if browser == "firefox":
             self.wd = webdriver.Firefox(capabilities={"marionette": False})
         elif browser == "chrome":
@@ -14,9 +15,11 @@ class Application:
             self.wd = webdriver.Ie()
         else:
             raise ValueError("Unrecognized  browser %s" % browser)
+        self.james = JamesHelper(self)
         self.session = SessionHelper(self)
-        self.base_url = base_url
+        self.config = config
         self.project = ProjectHelper(self)
+        self.base_url = config["web"]["baseUrl"]
 
     def is_valid(self):
         try:
@@ -27,8 +30,7 @@ class Application:
 
     def open_home_page(self):
         wd = self.wd
-        if not (wd.current_url.endswith("/") and len(wd.find_elements_by_name("add")) > 0):
-            wd.get(self.base_url)
+        wd.get(self.base_url)
 
     def destroy(self):
         self.wd.quit()

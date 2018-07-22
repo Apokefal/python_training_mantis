@@ -4,10 +4,8 @@ import os.path
 from fixture.application import Application
 import ftputil
 
-##
 fixture = None
 target = None
-
 
 def load_config(file):
     global target
@@ -17,6 +15,7 @@ def load_config(file):
             target = json.load(f)
     return target
 
+
 @pytest.fixture(scope="session")
 def config(request):
     return load_config(request.config.getoption("--target"))
@@ -25,13 +24,12 @@ def config(request):
 @pytest.fixture
 def app(request, config):
     global fixture
-    #web_config = load_config(request.config.getoption("--target"))['web']
     browser = request.config.getoption("--browser")
-    #creds = load_config(request.config.getoption("--target"))["webadmin"]
     if fixture is None or not fixture.is_valid():
-        fixture = Application(browser=browser, base_url=config["web"]["baseUrl"])
+        fixture = Application(browser=browser, config=config)
     fixture.session.ensure_login(username=config["webadmin"]["username"], password=config["webadmin"]["password"])
     return fixture
+
 
 @pytest.fixture(scope="session", autouse=True)
 def configure_server(request, config):
@@ -40,6 +38,7 @@ def configure_server(request, config):
         restore_server_configuration(config["ftp"]["host"], config["ftp"]["username"], config["ftp"]["password"])
     request.addfinalizer(fin)
 
+
 def install_server_configuration(host, username, password):
     with ftputil.FTPHost(host, username, password) as remote:
         if remote.path.isfile("config_inc.php.bak"):
@@ -47,6 +46,7 @@ def install_server_configuration(host, username, password):
         if remote.path.isfile("config_inc.php"):
             remote.rename("config_inc.php", "config_inc.php.bak")
         remote.upload(os.path.join(os.path.dirname(__file__), "resources/config_inc.php"), "config_inc.php")
+
 
 def restore_server_configuration(host, username, password):
     with ftputil.FTPHost(host, username, password) as remote:
