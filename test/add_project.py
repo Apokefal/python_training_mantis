@@ -1,10 +1,17 @@
 from model.project import Project
+import random
+import string
+
+
+def random_projectname(perfix, maxlen):
+    symbols = string.ascii_letters
+    return perfix + "".join([random.choice(symbols) for i in range(random.randrange(maxlen))])
 
 
 def test_add_project(app):
-    app.project.open_project_page()
-    old_project = app.project.project_count()
-    app.project.create_project(Project(name="test", description="test"))
-    app.project.open_project_page()
-    new_project = app.project.project_count()
-    assert old_project == new_project
+    project_name = random_projectname("project_", 10)
+    old_project = len(app.soap.get_projects("administrator", "root"))
+    app.soap.add_projects("administrator", "root", Project(name=project_name, description="Описание2555"))
+    new_project = len(app.soap.get_projects("administrator", "root"))
+    assert old_project + 1 == new_project
+

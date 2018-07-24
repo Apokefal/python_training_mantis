@@ -10,7 +10,7 @@ class JamesHelper:
         james_config = self.app.config['james']
         session = JamesHelper.Session(
             james_config['host'], james_config['port'], james_config['username'], james_config['password'])
-        if session.in_user_registered(username):
+        if session.is_user_registered(username):
             session.reset_password(username, password)
         else:
             session.create_user(username, password)
@@ -26,7 +26,7 @@ class JamesHelper:
             self.write(username +"\n")
             self.read_until("Password:")
             self.write(password + "\n")
-            self.read_until("Welcome root. HELP for list of commands:")
+            self.read_until("Welcome root. HELP for a list of commands:")
 
         def read_until(self, text):
             self.telnet.read_until(text.encode('ascii'), 5)
@@ -34,7 +34,7 @@ class JamesHelper:
         def write(self, text):
             self.telnet.write(text.encode('ascii'))
 
-        def in_user_registered(self, username):
+        def is_user_registered(self, username):
             self.write("verify $s\n" % username)
             res = self.telnet.expect([b"exists", b"does not exist"])
             return res[0] == 0
